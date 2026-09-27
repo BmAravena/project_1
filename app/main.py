@@ -12,6 +12,8 @@ app = FastAPI(
 # Include routers for different API versions
 app.include_router(api_router, prefix="/api/v1")
 
+
+
 # Root endpoint
 @app.get("/", tags=["Root"])
 async def root():
