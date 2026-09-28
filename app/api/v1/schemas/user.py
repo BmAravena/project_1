@@ -15,6 +15,11 @@ class UserCreate(UserBase):
     password: str
 
 
+class UserCreateDB(UserBase):
+    """Fields persisted when creating a user in the database."""
+    hashed_password: str
+
+
 class UserUpdate(BaseModel):
     """Optional fields for updating the user's profile."""
     email: Optional[EmailStr] = None

@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Proyecto 1 API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+
+    # async URL SQLite (create a local SQLite database file named 'sql_app.db' in the current directory)
+    ASYNC_DATABASE_URL: str = "sqlite+aiosqlite:///./sql_app.db"
     
 
 # Setting instance

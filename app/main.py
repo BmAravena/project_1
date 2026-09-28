@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from api.router import api_router
 from api.v1.endpoints import health
 from core.config import settings
+from db.session import Base, engine
+
 
 app = FastAPI(
     description="API REST para el Proyecto 1: Autenticación, Usuarios y Gestión con Postgres",
@@ -9,9 +11,15 @@ app = FastAPI(
     redoc_url="/redoc"     # Documentación alternativa en ReDoc
 )
 
+
+# Startup event to create database tables
+@app.on_event("startup")
+async def startup_event():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
 # Include routers for different API versions
 app.include_router(api_router, prefix="/api/v1")
-
 
 
 # Root endpoint
