@@ -66,3 +66,19 @@ async def get_users(
     """
     service = UserService(db)
     return await service.get_users(skip=skip, limit=limit)
+
+
+@router.get(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    summary="Get user by ID"
+)
+async def get_user_by_id(
+    user_id: int, 
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve a user from the database by their ID.
+    """
+    service = UserService(db)
+    return await service.get_user_by_id(user_id)
