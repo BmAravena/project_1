@@ -83,7 +83,7 @@ async def get_user_by_id(
 
 @router.delete(
     "/users/{user_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
     summary="Delete user by ID")
 async def delete_user(
     user_id: int, 
@@ -93,4 +93,5 @@ async def delete_user(
     Delete a user from the database by their ID.
     """
     service = UserService(db)
-    await service.delete_user(user_id)
+    await service.delete_user_by_id(user_id)
+    return {"message": "User deleted successfully"}
