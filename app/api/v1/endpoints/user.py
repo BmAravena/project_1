@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, status
-from app.api.v1.schemas.user import UserCreate, UserResponse, UserCreateDB, FakeUserResponse, FakeUserCreate
+from app.api.v1.schemas.user import UserCreateDB, UserResponse
 from app.services.user_service import UserService
-from app.db.fake_db import fake_db_list
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
-from app.services.user_service import UserService
 
 router = APIRouter()
 
@@ -82,3 +80,17 @@ async def get_user_by_id(
     """
     service = UserService(db)
     return await service.get_user_by_id(user_id)
+
+@router.delete(
+    "/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete user by ID")
+async def delete_user(
+    user_id: int, 
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete a user from the database by their ID.
+    """
+    service = UserService(db)
+    await service.delete_user(user_id)
