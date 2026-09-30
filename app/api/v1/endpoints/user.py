@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, status
-from api.v1.schemas.user import UserCreate, UserResponse, UserCreateDB, FakeUserResponse, FakeUserCreate
-from services.user_service import UserService
-from db.fake_db import fake_db_list
+from app.api.v1.schemas.user import UserCreate, UserResponse, UserCreateDB, FakeUserResponse, FakeUserCreate
+from app.services.user_service import UserService
+from app.db.fake_db import fake_db_list
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.session import get_db
-from services.user_service import UserService
+from app.db.session import get_db
+from app.services.user_service import UserService
 
 router = APIRouter()
 

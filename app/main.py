@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from api.router import api_router
-from api.v1.endpoints import health
-from core.config import settings
-from db.session import Base, engine
+from app.api.router import api_router
+from app.api.v1.endpoints import health
+from app.core.config import settings
+from app.db.session import Base, engine
 
 
 app = FastAPI(

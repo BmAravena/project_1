@@ -1,7 +1,7 @@
 # app/db/models/user.py
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
-from db.session import Base
+from app.db.session import Base
 
 
 class User(Base):

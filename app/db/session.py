@@ -2,7 +2,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
-from core.config import settings
+from app.core.config import settings
 
 # Create an asynchronous SQLAlchemy engine for the database connection
 engine = create_async_engine(
