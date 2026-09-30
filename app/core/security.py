@@ -23,7 +23,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
-    """Crea un nuevo token JWT con tiempo de expiración."""
+    """Creates a new JWT token with an expiration time."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
