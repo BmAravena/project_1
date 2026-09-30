@@ -1,4 +1,3 @@
-# app/services/user_service.py
 from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,11 +17,10 @@ class UserService:
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="El correo electrónico ya está registrado."
+                detail="Email already registered."
             )
 
-        # Crear instancia de User (Por ahora guardamos password directo para probar, 
-        # en la fase de auth se agregará el hash con Passlib/Bcrypt)
+        # Create a new User instance (Note: In the auth phase, hashing will be added with Passlib/Bcrypt) 
         new_user = User(
             email=user_in.email,
             hashed_password=user_in.hashed_password,
