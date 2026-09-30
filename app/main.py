@@ -6,9 +6,11 @@ from app.db.session import engine
 
 
 app = FastAPI(
+    title=settings.PROJECT_NAME,
     description="API REST para el Proyecto 1: Autenticación, Usuarios y Gestión con Postgres",
     docs_url="/docs",      # Interfaz gráfica de Swagger UI
-    redoc_url="/redoc"     # Documentación alternativa en ReDoc
+    redoc_url="/redoc"    # Documentación alternativa en ReDoc
+  # Nombre del documento
 )
 
 
