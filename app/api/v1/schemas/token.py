@@ -10,4 +10,5 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """Structure of the data contained within the JWT payload."""
-    sub: Optional[str] = None  # ID or Email of the user
+    email: str | None = None
+

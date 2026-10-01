@@ -1,7 +1,11 @@
+import os
 from typing import List, Union
 from fastapi_cloud_cli.config import Settings
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
@@ -18,6 +22,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
+    model_config = SettingsConfigDict(
+        env_file=BASE_DIR / ".env",  # Usa el operador / para unir rutas limpiamente
+        extra="ignore"
+    )
 
 # Setting instance
 settings = Settings()

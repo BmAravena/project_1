@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.security import verify_password
 from app.db.models.user import User
 from app.db.repositories.user_repo import UserRepository
 from app.api.v1.schemas.user import UserCreateDB
@@ -41,6 +42,21 @@ class UserService:
                 detail="Usuario no encontrado"
             )
         return user
+
+    async def authenticate_user(self, email: str, password: str) -> User | None:
+        """Authenticate a user by email and password."""
+        #result = await self.db.execute(select(User).where(User.email == email))
+        result = await self.repo.get_by_email(email)
+        user = result.scalars().first()
+
+        if not user:
+            return None
+        
+        if not verify_password(password, user.hashed_password):
+            return None
+            
+        return user
+
 
     async def delete_user_by_id(self, user_id: int) -> None:
         user = await self.repo.get_by_id(user_id)
