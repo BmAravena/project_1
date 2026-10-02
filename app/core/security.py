@@ -1,5 +1,5 @@
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import VerifyMismatchError, InvalidHashError
 from datetime import datetime, timedelta, timezone
 from jose import jwt
 from app.core.config import settings
@@ -18,7 +18,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies if the entered password matches the stored hash."""
     try:
         return ph.verify(hashed_password, plain_password)
-    except VerifyMismatchError:
+    except (VerifyMismatchError, InvalidHashError):
         return False
 
 

@@ -1,8 +1,9 @@
 from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-from app.core.security import verify_password
+from app.core.security import verify_password, hash_password
 from app.db.models.user import User
 from app.db.repositories.user_repo import UserRepository
 from app.api.v1.schemas.user import UserCreateDB
@@ -24,7 +25,7 @@ class UserService:
         # Create a new User instance (Note: In the auth phase, hashing will be added with Passlib/Bcrypt) 
         new_user = User(
             email=user_in.email,
-            hashed_password=user_in.hashed_password,
+            hashed_password=hash_password(user_in.hashed_password),
             full_name=user_in.full_name,
             is_active=user_in.is_active
         )
@@ -45,9 +46,7 @@ class UserService:
 
     async def authenticate_user(self, email: str, password: str) -> User | None:
         """Authenticate a user by email and password."""
-        #result = await self.db.execute(select(User).where(User.email == email))
-        result = await self.repo.get_by_email(email)
-        user = result.scalars().first()
+        user = await self.repo.get_by_email(email)
 
         if not user:
             return None
