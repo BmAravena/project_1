@@ -35,14 +35,15 @@ async def create_fake_user(user: FakeUserCreate):
 """
 
 # testing purposes
-@router.get("/users/test-me")
+@router.get("/users/me")
 async def get_my_user_profile(current_user: User = Depends(get_current_user)):
     """
     protected endpoint to get the profile of the currently authenticated user.
     """
     return {
-        "id": current_user.id,
+        "full_name": current_user.full_name,
         "email": current_user.email,
+        "created_at": current_user.created_at,
         # You can return other fields from your model that are not sensitive (like the password)
     }
 
