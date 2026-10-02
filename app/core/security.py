@@ -1,6 +1,7 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, InvalidHashError
 from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from app.core.config import settings
 

@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, status
 from app.api.v1.schemas.user import UserCreateDB, UserResponse
 from app.services.user_service import UserService
 
+from app.db.models.user import User
+from app.core.deps import get_current_user
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -30,6 +33,19 @@ async def create_fake_user(user: FakeUserCreate):
     return new_user
 
 """
+
+# testing purposes
+@router.get("/users/test-me")
+async def get_my_user_profile(current_user: User = Depends(get_current_user)):
+    """
+    protected endpoint to get the profile of the currently authenticated user.
+    """
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        # You can return other fields from your model that are not sensitive (like the password)
+    }
+
 
 # SQLITE
 @router.post(
@@ -95,3 +111,5 @@ async def delete_user(
     service = UserService(db)
     await service.delete_user_by_id(user_id)
     return {"message": "User deleted successfully"}
+
+
