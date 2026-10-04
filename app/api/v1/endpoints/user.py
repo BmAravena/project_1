@@ -4,6 +4,7 @@ from app.services.user_service import UserService
 
 from app.db.models.user import User
 from app.core.deps import get_current_user, require_role
+from app.core.enums import RoleEnum
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,14 +35,14 @@ async def create_fake_user(user: FakeUserCreate):
 
 """
 
-# --- 2. Listar todos los usuarios (EXCLUSIVO ADMIN) ---
+# --- Get all users (ADMIN ONLY) ---
 @router.get("/users/adm", response_model=list[UserResponse])
 async def list_all_users(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["admin"]))
+    current_user: User = Depends(require_role([RoleEnum.ADMIN]))
 ):
     """
-    Endpoint protegido: Solo los administradores pueden ver la lista completa de usuarios.
+    Protected Endpoint to retrieve a list of all users in the database. Only accessible by admins.
     """
     result = UserService(db)
     users = await result.get_users(skip=0, limit=100)
@@ -53,7 +54,7 @@ async def list_all_users(
     summary="Admin Dashboard - Protected Endpoint"
 )
 async def admin_dashboard(
-    current_user: User = Depends(require_role(["admin"]))
+    current_user: User = Depends(require_role([RoleEnum.ADMIN]))
 ):
     """
     Protected Endpoint for Admin Dashboard.
@@ -144,28 +145,28 @@ async def delete_user(
     return {"message": "User deleted successfully"}
 
 
-# --- 3. Cambiar el rol de un usuario (EXCLUSIVO ADMIN) ---
-@router.patch("/{user_id}/role", response_model=UserResponse)
+# --- 3. Change user role (ADMIN ONLY) ---
+@router.patch("/users/{user_id}/role", response_model=UserResponse)
 async def update_user_role(
     user_id: int,
-    new_role: str,  # O puedes recibirlo a través de un esquema Pydantic
+    new_role: str,  
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(["admin"]))
+    current_user: User = Depends(require_role([RoleEnum.ADMIN]))
 ):
     """
-    Endpoint protegido: Permite a un administrador cambiar el rol de un usuario (ej. a 'staff' o 'admin').
+    protected endpoint to update the role of a user. Only accessible by admins.
     """
-    # Validar que el rol sea uno de los permitidos por el sistema
-    allowed_roles = ["user", "staff", "admin"]
+    # Validate the new role
+    allowed_roles = [RoleEnum.USER, RoleEnum.STAFF, RoleEnum.ADMIN]
     if new_role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Rol no válido. Los roles permitidos son: {allowed_roles}"
         )
 
-    # Buscar al usuario a modificar
+    # Search for the user in the database
     result = UserService(db)
-    user_to_update = result.get_by_id(user_id)
+    user_to_update = await result.get_user_by_id(user_id)
 
     if not user_to_update:
         raise HTTPException(
@@ -173,7 +174,7 @@ async def update_user_role(
             detail="Usuario no encontrado"
         )
 
-    # Actualizar el rol
+    # Update the user's role
     user_to_update.role = new_role
     db.add(user_to_update)
     await db.commit()
