@@ -1,6 +1,5 @@
 import os
 from typing import List, Union
-from fastapi_cloud_cli.config import Settings
 from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path

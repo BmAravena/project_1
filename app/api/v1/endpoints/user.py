@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.v1.schemas.user import UserCreateDB, UserResponse
 from app.services.user_service import UserService
 
 from app.db.models.user import User
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_role
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +33,36 @@ async def create_fake_user(user: FakeUserCreate):
     return new_user
 
 """
+
+# --- 2. Listar todos los usuarios (EXCLUSIVO ADMIN) ---
+@router.get("/users/adm", response_model=list[UserResponse])
+async def list_all_users(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(["admin"]))
+):
+    """
+    Endpoint protegido: Solo los administradores pueden ver la lista completa de usuarios.
+    """
+    result = UserService(db)
+    users = await result.get_users(skip=0, limit=100)
+    return users
+
+
+@router.get(
+    "/users/admin/dashboard", 
+    summary="Admin Dashboard - Protected Endpoint"
+)
+async def admin_dashboard(
+    current_user: User = Depends(require_role(["admin"]))
+):
+    """
+    Protected Endpoint for Admin Dashboard.
+    """
+    return {
+        "message": f"Welcome to the admin dashboard, {current_user.email}",
+        "role": current_user.role
+    }
+
 
 # testing purposes
 @router.get("/users/me")
@@ -114,3 +144,39 @@ async def delete_user(
     return {"message": "User deleted successfully"}
 
 
+# --- 3. Cambiar el rol de un usuario (EXCLUSIVO ADMIN) ---
+@router.patch("/{user_id}/role", response_model=UserResponse)
+async def update_user_role(
+    user_id: int,
+    new_role: str,  # O puedes recibirlo a través de un esquema Pydantic
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(["admin"]))
+):
+    """
+    Endpoint protegido: Permite a un administrador cambiar el rol de un usuario (ej. a 'staff' o 'admin').
+    """
+    # Validar que el rol sea uno de los permitidos por el sistema
+    allowed_roles = ["user", "staff", "admin"]
+    if new_role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Rol no válido. Los roles permitidos son: {allowed_roles}"
+        )
+
+    # Buscar al usuario a modificar
+    result = UserService(db)
+    user_to_update = result.get_by_id(user_id)
+
+    if not user_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    # Actualizar el rol
+    user_to_update.role = new_role
+    db.add(user_to_update)
+    await db.commit()
+    await db.refresh(user_to_update)
+
+    return user_to_update

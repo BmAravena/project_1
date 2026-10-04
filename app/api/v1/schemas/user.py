@@ -1,3 +1,4 @@
+from dataclasses import field
 from typing import Optional
 from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
@@ -7,12 +8,12 @@ class UserBase(BaseModel):
     email: EmailStr
     is_active: bool = True
     full_name: Optional[str] = None
-
+    role: str = "user"
 
 # --- Request Schemas (Inputs) ---
 class UserCreate(UserBase):
     """Required fields for creating a new user."""
-    password: str
+    password: str = Field(min_length=8, max_length=30)
 
 
 class UserCreateDB(UserBase):
@@ -25,6 +26,7 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     password: Optional[str] = None
+    role: Optional[str] = None
 
 
 # --- Response Schemas (Outputs) ---
@@ -33,6 +35,7 @@ class UserResponse(UserBase):
     Schema for returning user information in API responses.
     """
     id: int
+   
 
     # configuration for Pydantic model to allow ORM mode
     model_config = ConfigDict(from_attributes=True)
