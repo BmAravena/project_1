@@ -20,6 +20,7 @@ async def startup_event():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+
 # Include routers for different API versions
 app.include_router(api_router, prefix="/api/v1")
 
