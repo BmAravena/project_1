@@ -8,6 +8,8 @@ from app.db.models.task import Task
 from app.db.models.user import User
 from app.core.deps import get_current_user
 from app.api.v1.schemas.task import TaskCreate, TaskResponse
+from app.services.task_service import TaskService
+from app.services.user_service import UserService
 
 router = APIRouter()
 
@@ -21,7 +23,7 @@ async def create_task(
     new_task = Task(
         title=task_in.title,
         description=task_in.description,
-        owner_id=current_user.id  # <-- Se asigna automáticamente al usuario logueado
+        owner_id=current_user.id  # <-- Set the owner_id to the current user's ID
     )
     db.add(new_task)
     await db.commit()
@@ -29,45 +31,47 @@ async def create_task(
     return new_task
 
 
-# --- 2. Listar Tareas (Con lógica de roles y propiedad) ---
+# List all tasks (Authenticated users only)
 @router.get("/", response_model=List[TaskResponse])
 async def list_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
-):
-    # Si es admin o staff, puede ver todas las tareas del sistema
+):  
+    service = TaskService(db) # Create an instance of TaskService with the database session
+    # If the user is an admin or staff, they can see all tasks; otherwise, they only see their own tasks.
     if current_user.role in ["admin", "staff"]:
-        result = await db.execute(select(Task))
+        result = await service.get_all_tasks()
     else:
-        # Si es un usuario común, solo ve SUS propias tareas
-        result = await db.execute(select(Task).where(Task.owner_id == current_user.id))
+        # If the user is not an admin or staff, retrieve only their own tasks
+        result = await service.get_tasks_by_owner(owner_id=current_user.id)
         
-    tasks = result.scalars().all()
-    return tasks
+        
+    #tasks = result.scalars().all()
+    return result
 
 
-# --- 3. Eliminar Tarea (Validando Ownership o Rols Altos) ---
+# Delete a task by ID (Authenticated users only)
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     task_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Buscar la tarea
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalars().first()
+    service = TaskService(db) # Create an instance of TaskService with the database session
+    # Search for the task by ID
+    result = await service.get_task_by_id(task_id)
 
-    if not task:
-        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    if not result:
+        raise HTTPException(status_code=404, detail="Task not found")
 
-    # VALIDACIÓN DE PROPIEDAD: 
-    # Solo puede borrarla si es el dueño O si es admin/staff
-    if task.owner_id != current_user.id and current_user.role not in ["admin", "staff"]:
+    # validate ownership or roles (admin/staff) before allowing deletion
+    # Only the owner of the task or users with "admin" or "staff" roles can delete the task
+    if result.owner_id != current_user.id and current_user.role not in ["admin", "staff"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para eliminar esta tarea"
+            detail="You do not have permission to delete this task"
         )
 
-    await db.delete(task)
+    await db.delete(result)
     await db.commit()
-    return None
+    return
