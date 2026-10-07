@@ -145,7 +145,7 @@ async def delete_user(
     return {"message": "User deleted successfully"}
 
 
-# --- 3. Change user role (ADMIN ONLY) ---
+# Change user role (ADMIN ONLY) ---
 @router.patch("/users/{user_id}/role", response_model=UserResponse)
 async def update_user_role(
     user_id: int,
@@ -161,7 +161,7 @@ async def update_user_role(
     if new_role not in allowed_roles:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Rol no válido. Los roles permitidos son: {allowed_roles}"
+            detail=f"No valid role. Allowed roles are: {allowed_roles}"
         )
 
     # Search for the user in the database
