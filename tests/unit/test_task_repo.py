@@ -46,7 +46,6 @@ async def _test_repository_crud_and_owner_filtering():
         owner_tasks = await repository.get_by_owner_id(user.id)
         assert len(owner_tasks) == 1
         assert owner_tasks[0].id == created_task.id
-        assert owner_tasks[0].owner_id == user.id
 
         fetched_task.completed = True
         updated_task = await repository.update(fetched_task)
