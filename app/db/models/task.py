@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base import Base  # O la clase base de SQLAlchemy que estés usando
 
+
 class Task(Base):
     __tablename__ = "tasks"
 
@@ -10,8 +11,8 @@ class Task(Base):
     description = Column(String, nullable=True)
     completed = Column(Boolean, default=False)
     
-    # Llave foránea para relacionar la tarea con el usuario propietario
+    # Foreign key to link the task to its owner (user)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
-    # Relación inversa opcional para navegar desde el usuario a sus tareas
-    owner = relationship("User", back_populates="tasks")
+    # Relationship to the User model to access the owner of the task
+    owner = relationship("User", back_populates="tasks", lazy="selectin")

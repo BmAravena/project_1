@@ -1,3 +1,5 @@
+import asyncio
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
@@ -7,7 +9,7 @@ from app.db.models.user import User
 from app.db.repositories.task_repo import TaskRepository
 
 
-async def test_task_repository_crud_and_owner_filtering():
+async def _test_repository_crud_and_owner_filtering():
     engine = create_async_engine(
         "sqlite+aiosqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -44,6 +46,7 @@ async def test_task_repository_crud_and_owner_filtering():
         owner_tasks = await repository.get_by_owner_id(user.id)
         assert len(owner_tasks) == 1
         assert owner_tasks[0].id == created_task.id
+        assert owner_tasks[0].owner_id == user.id
 
         fetched_task.completed = True
         updated_task = await repository.update(fetched_task)
@@ -53,3 +56,7 @@ async def test_task_repository_crud_and_owner_filtering():
         assert await repository.get_by_id(created_task.id) is None
 
     await engine.dispose()
+
+
+def test_task_repository_crud_and_owner_filtering():
+    asyncio.run(_test_repository_crud_and_owner_filtering())
