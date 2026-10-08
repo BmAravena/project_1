@@ -24,7 +24,7 @@ The app runs on FastAPI and creates database tables automatically at startup.
 - SQLite + aiosqlite
 - Pydantic + Pydantic Settings
 - JWT with python-jose
-- Passlib + bcrypt
+- Passlib (password hashing via Argon2)
 - Pytest
 - Uvicorn
 
@@ -158,7 +158,7 @@ The API is mounted under the `/api/v1` prefix.
 
 ## Security
 
-The application uses JWT to protect private routes.
+The application uses JWT to protect private routes and Argon2 for password hashing.
 
 Security-related modules include:
 
@@ -166,7 +166,7 @@ Security-related modules include:
 - `app/core/deps.py`
 - `app/core/config.py`
 
-Tokens are generated using the secret defined in `.env` and validated on each authenticated request. Role-based access is enforced through dependency functions that check the user's role.
+Password hashes are generated with `argon2.PasswordHasher` and verified with the same library, which is more resistant to GPU-based attacks than legacy algorithms such as bcrypt. Tokens are generated using the secret defined in `.env` and validated on each authenticated request. Role-based access is enforced through dependency functions that check the user's role.
 
 ## Environment variables
 
