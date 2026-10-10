@@ -6,8 +6,7 @@ from app.core.config import settings
 
 # Create an asynchronous SQLAlchemy engine for the database connection
 engine = create_async_engine(
-    settings.ASYNC_DATABASE_URL,
-    connect_args={"check_same_thread": False},  # Necessary for SQLite to allow multiple threads to access the database
+    settings.DATABASE_URL_POSTGRES,
     echo=True  # Shows SQL queries in the console (ideal for learning)
 )
 

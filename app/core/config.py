@@ -1,6 +1,3 @@
-import os
-from typing import List, Union
-from pydantic import AnyHttpUrl, validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
@@ -13,8 +10,9 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
-    # async URL SQLite (create a local SQLite database file named 'sql_app.db' in the current directory)
-    ASYNC_DATABASE_URL: str = "sqlite+aiosqlite:///./sql_app.db"
+    # Async SQLAlchemy URL; set in .env, for example:
+    # postgresql+asyncpg://user:password@localhost:5432/database
+    DATABASE_URL_POSTGRES: str
 
     # security settings
     SECRET_KEY: str

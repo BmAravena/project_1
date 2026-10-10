@@ -1,6 +1,6 @@
 # User and Task API
 
-This project is a REST API built with FastAPI to manage users, JWT authentication, role-based access control, and user-owned tasks. It follows a modular backend structure with Pydantic validation, async SQLAlchemy persistence, and a local SQLite database for development.
+This project is a REST API built with FastAPI to manage users, JWT authentication, role-based access control, and user-owned tasks. It follows a modular backend structure with Pydantic validation and async SQLAlchemy persistence using PostgreSQL.
 
 ## Overview
 
@@ -21,7 +21,7 @@ The app runs on FastAPI and creates database tables automatically at startup.
 - Python 3.x
 - FastAPI
 - SQLAlchemy (async)
-- SQLite + aiosqlite
+- PostgreSQL + asyncpg
 - Pydantic + Pydantic Settings
 - JWT with python-jose
 - Passlib (password hashing via Argon2)
@@ -176,9 +176,10 @@ The project uses a `.env` file for base configuration. A typical example is:
 SECRET_KEY="wrld999"
 ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=15
+DATABASE_URL_POSTGRES="postgresql+asyncpg://<user>:<password>@localhost:5432/<database>"
 ```
 
-In production, it is recommended to use a strong secret key and avoid committing secrets to public repositories.
+Set `DATABASE_URL_POSTGRES` to your PostgreSQL connection URL. The `postgresql+asyncpg` prefix selects SQLAlchemy's async PostgreSQL driver. In production, use a strong secret key and never commit real credentials or secrets to a public repository.
 
 ## Local installation
 
@@ -228,11 +229,12 @@ Interactive API docs are available at:
 pytest
 ```
 
-The project includes integration tests for service health and basic workflows using an in-memory SQLite database.
+The project includes integration tests for service health and basic workflows using an in-memory SQLite database. This is test-only; the application itself connects to PostgreSQL.
 
 ## Notes
 
-- The development database is stored in `sql_app.db`.
+- The application database connection is configured by `DATABASE_URL_POSTGRES` in `.env`.
+- Tests override the application database dependency and use an in-memory SQLite database.
 - On startup, `Base.metadata.create_all` creates the tables automatically.
 - The project is structured to grow with more modules, repositories, and services while keeping a clear separation of responsibilities.
 
