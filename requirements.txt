@@ -48,6 +48,7 @@ pytest==asyncio-1.4.0
 sqlalchemy==2.1.1
 aiosqlite==0.22.1
 greenlet==3.5.6
+asyncpg==0.32.0 # PostgreSQL driver for async operations
 
 # Security
 argon2==cffi-25.1.0
