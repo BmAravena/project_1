@@ -21,13 +21,13 @@ print("¡Role updated to admin successfully!")
 import psycopg2
 from app.core.config import settings
 
-# Limpiamos el "+asyncpg" para que psycopg2 pueda interpretar la URL correctamente
+# Clean the database URL to remove the asyncpg part for psycopg2
 db_url = settings.DATABASE_URL_POSTGRES.replace("+asyncpg", "")
 
 conn = psycopg2.connect(db_url)
 cursor = conn.cursor()
 
-# Actualiza el rol del usuario
+# Update the role of the user you want (change the email for yours)
 cursor.execute(
     "UPDATE users SET role = %s WHERE email = %s", 
     ("admin", "benjamin@gmail.com")

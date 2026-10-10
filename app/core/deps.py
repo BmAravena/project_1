@@ -22,7 +22,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        # Decodificamos el token usando las configuraciones de Pydantic
+        # Decode the JWT token to get the user's email (sub)
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
@@ -31,7 +31,7 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    # Buscamos al usuario en la base de datos usando tu servicio
+    # Searching for the user in the database using the email from the token
     service = UserService(db)
     user = await service.repo.get_by_email(email=token_data.email)
     
@@ -42,13 +42,13 @@ async def get_current_user(
 
 def require_role(allowed_roles: list[str]):
     """
-    Dependencia reutilizable para verificar si el usuario autenticado tiene uno de los roles permitidos.
+    Dependency to check if the current user has one of the allowed roles.
     """
     async def role_dependency(current_user: User = Depends(get_current_user)):
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tienes los permisos suficientes para realizar esta acción"
+                detail="You do not have the required role to access this resource."
             )
         return current_user
     return role_dependency
