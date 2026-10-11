@@ -1,4 +1,3 @@
-// frontend/src/pages/AdminDashboard.jsx
 import React from 'react';
 
 export default function AdminDashboard() {
@@ -9,9 +8,9 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Panel de Administración 🛡️</h1>
-      <p>Bienvenido, administrador. Aquí tienes control total del sistema.</p>
-      <button onClick={handleLogout}>Cerrar Sesión</button>
+      <h1>Admin Dashboard 🛡️</h1>
+      <p>Welcome, administrator. Here you have full control of the system.</p>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }

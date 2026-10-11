@@ -1,13 +1,12 @@
-const API_URL = "http://localhost:8000"; // La URL de tu FastAPI
+const API_URL = "http://localhost:8000"; // FastApi URL
 
 
 export const loginUser = async (username, password) => {
-  // FastAPI por defecto espera los datos de OAuth2PasswordRequestForm en formato x-www-form-urlencoded
+  // FastAPI expects form data for login, so we need to send it in the correct format
   const formData = new URLSearchParams();
   formData.append("username", username);
   formData.append("password", password);
-    const response = await fetch(`${API_URL}/api/v1/auth/login`, { 
-  //const response = await fetch(`${API_URL}/token`, { // Ajusta la ruta según tu endpoint de login en FastAPI
+    const response = await fetch(`${API_URL}/api/v1/auth/login`, { // Ajust the endpoint to match your FastAPI route
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -16,11 +15,11 @@ export const loginUser = async (username, password) => {
   });
 
   if (!response.ok) {
-    throw new Error("Credenciales inválidas o error en el servidor");
+    throw new Error("Invalid credentials or connection error with FastAPI");
   }
 
   const data = await response.json();
-  return data; // Aquí debería venir el access_token
+  return data; // Return access_token and token_type
 };
 
 export const getUserRoleFromToken = (token) => {

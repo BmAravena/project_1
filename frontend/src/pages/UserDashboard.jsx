@@ -9,9 +9,9 @@ export default function UserDashboard() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Panel de Usuario 👤</h1>
-      <p>Bienvenido a tu vista personal.</p>
-      <button onClick={handleLogout}>Cerrar Sesión</button>
+      <h1>User Dashboard 👤</h1>
+      <p>Welcome to your personal view.</p>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }
