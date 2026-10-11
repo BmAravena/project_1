@@ -3,7 +3,7 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -11,6 +11,18 @@ app = FastAPI(
     docs_url="/docs",      # Interfaz gráfica de Swagger UI
     redoc_url="/redoc"    # Documentación alternativa en ReDoc
   # Nombre del documento
+)
+
+origins = [
+    "http://localhost:5173", # La URL de tu frontend de Vite
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

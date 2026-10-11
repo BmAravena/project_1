@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models import user
+from app.api.v1.schemas import user
 from app.db.session import get_db
 from app.services.user_service import UserService
 from app.core.security import create_access_token
@@ -31,6 +33,7 @@ async def login_for_access_token(
         )
     
     # Creamos el token JWT incluyendo el email como payload principal (sub)
-    access_token = create_access_token(data={"sub": user.email})
+    #access_token = create_access_token(data={"sub": user.email})
+    access_token = create_access_token(data={"sub": user.email, "role": user.role})
     
     return {"access_token": access_token, "token_type": "bearer"}
