@@ -18,15 +18,27 @@ The app runs on FastAPI and creates database tables automatically at startup.
 
 ## Technology stack
 
+### Backend
+
 - Python 3.x
 - FastAPI
-- SQLAlchemy (async)
-- PostgreSQL + asyncpg
+- SQLAlchemy (async) + asyncpg
+- PostgreSQL
 - Pydantic + Pydantic Settings
 - JWT with python-jose
-- Passlib (password hashing via Argon2)
+- Argon2 for password hashing
 - Pytest
 - Uvicorn
+
+### Frontend
+
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Tailwind CSS 4, integrated through PostCSS
+- Oxlint
+- npm
 
 ## Architecture used
 
@@ -40,6 +52,8 @@ This project follows a layered architecture inspired by the Service + Repository
 - Database layer: connection/session configuration in `app/db/session.py`
 
 This separation makes the project easier to extend, test, and maintain. The application logic is not embedded directly in the endpoints; instead, routes delegate to service classes, which interact with repository classes and the database models.
+
+The frontend is a separate React single-page application. React Router handles client-side routes, `ProtectedRoute` checks for an access token and the required role before displaying protected pages, and the authentication service communicates with the FastAPI backend. Vite provides the frontend development server and production build; Tailwind CSS is processed with PostCSS.
 
 ## Project structure
 
@@ -83,6 +97,24 @@ project_1/
 │   │   └── __init__.py
 │   ├── main.py
 │   └── __init__.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── ProtectedRoute.tsx
+│   │   ├── pages/
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── Login.tsx
+│   │   │   └── UserDashboard.tsx
+│   │   ├── services/
+│   │   │   └── authService.ts
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── index.css
+│   ├── package.json
+│   ├── postcss.config.ts
+│   ├── tailwind.config.ts
+│   ├── tsconfig.json
+│   └── vite.config.js
 ├── tests/
 │   ├── conftest.py
 │   ├── integration/
@@ -204,24 +236,48 @@ Linux/macOS:
 source venv/bin/activate
 ```
 
-4. Install dependencies:
+4. Install backend dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Make sure the `.env` file is configured.
+5. Configure the `.env` file with the backend settings, including `DATABASE_URL_POSTGRES`.
+6. Install frontend dependencies:
 
-## Running the application
+```bash
+cd frontend
+npm install
+```
+
+## Running the applications
+
+Start the backend from the project root:
 
 ```bash
 uvicorn app.main:app --reload
+```
+
+In a separate terminal, start the frontend:
+
+```bash
+cd frontend
+npm run dev
+```
+
+To create a production frontend build:
+
+```bash
+cd frontend
+npm run build
 ```
 
 Interactive API docs are available at:
 
 - Swagger UI: `http://localhost:8000/docs`
 - Redoc: `http://localhost:8000/redoc`
+
+The Vite development server prints the frontend URL in the terminal when it starts.
 
 ## Running tests
 
