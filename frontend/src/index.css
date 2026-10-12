@@ -1,3 +1,10 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-slate-950; /* O slate-900, pero slate-950 es un poco más suave y uniforme */
+  margin: 0;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
