@@ -1,4 +1,3 @@
-// frontend/src/pages/UserDashboard.jsx
 import React from 'react';
 
 export default function UserDashboard() {

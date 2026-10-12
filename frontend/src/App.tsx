@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
@@ -10,13 +9,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirige la raíz "/" directamente al login */}
+        {/* Go to login by default */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Ruta pública de Login */}
+        {/* Public route for Login */}
         <Route path="/login" element={<Login />} />
 
-        {/* Ruta protegida para Administradores */}
+        {/* Protected route for Admins */}
         <Route 
           path="/admin/dashboard" 
           element={
@@ -26,7 +25,7 @@ export default function App() {
           } 
         />
 
-        {/* Ruta protegida para Usuarios comunes */}
+        {/* Protected route for Regular Users */}
         <Route 
           path="/dashboard" 
           element={
@@ -36,7 +35,7 @@ export default function App() {
           } 
         />
 
-        {/* Cualquier otra ruta desconocida redirige al login */}
+        {/* Any other unknown route redirects to the login page */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

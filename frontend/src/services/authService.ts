@@ -1,7 +1,7 @@
 const API_URL = "http://localhost:8000"; // FastApi URL
 
 
-export const loginUser = async (username, password) => {
+export const loginUser = async (username: string, password: string) => {
   // FastAPI expects form data for login, so we need to send it in the correct format
   const formData = new URLSearchParams();
   formData.append("username", username);
@@ -22,7 +22,7 @@ export const loginUser = async (username, password) => {
   return data; // Return access_token and token_type
 };
 
-export const getUserRoleFromToken = (token) => {
+export const getUserRoleFromToken = (token: string): string | null => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');

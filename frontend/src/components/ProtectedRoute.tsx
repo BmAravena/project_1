@@ -1,9 +1,8 @@
-// frontend/src/components/ProtectedRoute.jsx
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-// Función auxiliar para leer el rol del token (la misma que vimos antes)
-const getUserRoleFromToken = (token) => {
+// A function helper function to decode the JWT and extract the user's role
+const getUserRoleFromToken = (token: string) => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -16,15 +15,21 @@ const getUserRoleFromToken = (token) => {
   }
 };
 
-export default function ProtectedRoute({ children, allowedRole }) {
+// We define the props for the ProtectedRoute component
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRole?: string; 
+}
+
+export default function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
   const token = localStorage.getItem('token');
 
-  // Si no hay token, redirige al login
+  // If there's no token, redirect to the login page
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  // Si se requiere un rol específico y no coincide, redirige al inicio
+  // If an allowed role is specified and it doesn't match, redirect to the login page
   if (allowedRole) {
     const userRole = getUserRoleFromToken(token);
     if (userRole !== allowedRole) {
