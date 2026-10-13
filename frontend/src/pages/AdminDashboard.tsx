@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import api from '../services/api';
 
-interface User {
-  id: number;
-  email: string;
-  full_name: string | null;
-  role: string;
-  is_active: boolean;
-}
-
 export default function AdminDashboard() {
-  // 1. Estados declarados dentro del componente
   const [activeTab, setActiveTab] = useState<'list' | 'detail' | 'create'>('list');
   const [searchId, setSearchId] = useState('');
+  const [searchedUser, setSearchedUser] = useState<any>(null);
+  const [searchError, setSearchError] = useState('');
   const [users, setUsers] = useState<any[]>([]);
 
-  const [searchedUser, setSearchedUser] = useState<User | null>(null);
-  const [searchError, setSearchError] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  // Estados para crear usuario alineados con Pydantic (UserCreate)
+  const [newEmail, setNewEmail] = useState('');
+  const [newFullName, setNewFullName] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState('user');
+  const [createError, setCreateError] = useState('');
+  const [createSuccess, setCreateSuccess] = useState('');
 
-  
-  // 2. Cargar usuarios cuando la pestaña activa sea 'list'
   useEffect(() => {
     if (activeTab === 'list') {
-      api.get('api/v1/users/')
+      api.get('/api/v1/users/')
         .then((response) => setUsers(response.data))
         .catch((error) => console.error("Error al cargar usuarios:", error));
     }
@@ -35,46 +29,79 @@ export default function AdminDashboard() {
     window.location.href = '/login';
   };
 
-
-  // Search user by ID function
-  const handleSearchUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const userId = Number(searchId);
-    if (!Number.isInteger(userId) || userId < 1) {
-      setSearchError('Ingresa un ID válido.');
-      setSearchedUser(null);
-      return;
-    }
-
-    setSearchError('');
-    setSearchedUser(null);
-    setIsSearching(true);
-
-    try {
-      const response = await api.get<User>(`/api/v1/users/${userId}`);
-      setSearchedUser(response.data);
-    } catch (error: unknown) {
-      console.error("Error al buscar usuario:", error);
-      if (axios.isAxiosError(error) && error.response?.status === 404) {
-        setSearchError("Usuario no encontrado.");
-      } else {
-        setSearchError("Ocurrió un error al realizar la búsqueda.");
-      }
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Delete user function
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Estás seguro de eliminar este usuario?")) return;
     
     try {
-      await api.delete(`/users/${id}`);
+      await api.delete(`/api/v1/users/${id}`);
       setUsers(users.filter((user: any) => user.id !== id));
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
       alert("No se pudo eliminar el usuario.");
+    }
+  };
+
+  const handleSearchUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchId) return;
+
+    setSearchError('');
+    setSearchedUser(null);
+
+    try {
+      const response = await api.get(`/api/v1/users/${searchId}`);
+      setSearchedUser(response.data);
+    } catch (error: any) {
+      console.error("Error al buscar usuario:", error);
+      if (error.response && error.response.status === 404) {
+        setSearchError("Usuario no encontrado.");
+      } else {
+        setSearchError("Ocurrió un error al realizar la búsqueda.");
+      }
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateError('');
+    setCreateSuccess('');
+
+    try {
+      // Petición apuntando al prefijo correcto /api/v1/users/
+      await api.post('/api/v1/users/', {
+        email: newEmail,
+        full_name: newFullName.trim() ? newFullName : null,
+        hashed_password: newPassword,
+        role: newRole,
+        is_active: true
+      });
+
+      setCreateSuccess('¡Usuario creado exitosamente!');
+      setNewEmail('');
+      setNewFullName('');
+      setNewPassword('');
+      setNewRole('user');
+
+      setTimeout(() => {
+        setActiveTab('list');
+        setCreateSuccess('');
+      }, 1500);
+
+    } catch (error: any) {
+      console.error("Error al crear usuario:", error);
+      if (error.response && error.response.data && error.response.data.detail) {
+        const detail = error.response.data.detail;
+        if (Array.isArray(detail)) {
+          const errorMessages = detail.map((err: any) => `${err.loc.join('.')}: ${err.msg}`).join(' | ');
+          setCreateError(errorMessages);
+        } else if (typeof detail === 'object') {
+          setCreateError(JSON.stringify(detail));
+        } else {
+          setCreateError(detail);
+        }
+      } else {
+        setCreateError("Ocurrió un error al registrar el usuario.");
+      }
     }
   };
 
@@ -119,6 +146,12 @@ export default function AdminDashboard() {
           >
             ➕ Registrar Nuevo Usuario
           </button>
+          <button 
+            onClick={() => setActiveTab('create')}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${activeTab === 'create' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          >
+            ➕ Get tasks
+          </button>
         </div>
 
         {/* VISTA 1: LISTAR USUARIOS */}
@@ -133,7 +166,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr className="bg-slate-800/80 text-slate-300 border-b border-slate-700/60">
                       <th className="p-4 font-medium">ID</th>
-                      <th className="p-4 font-medium">Usuario / Email</th>
+                      <th className="p-4 font-medium">Nombre / Email</th>
                       <th className="p-4 font-medium">Rol</th>
                       <th className="p-4 font-medium text-center">Acciones</th>
                     </tr>
@@ -147,7 +180,10 @@ export default function AdminDashboard() {
                       users.map((user: any) => (
                         <tr key={user.id} className="hover:bg-slate-700/20 transition">
                           <td className="p-4 text-slate-400 font-mono">{user.id}</td>
-                          <td className="p-4 font-medium text-white">{user.email || user.username}</td>
+                          <td className="p-4">
+                            <div className="font-medium text-white">{user.email}</div>
+                            {user.full_name && <div className="text-xs text-slate-400">{user.full_name}</div>}
+                          </td>
                           <td className="p-4 text-blue-400 font-semibold">{user.role || 'user'}</td>
                           <td className="p-4 flex justify-center gap-2">
                             <button 
@@ -174,41 +210,45 @@ export default function AdminDashboard() {
               <h2 className="text-xl font-bold text-white">Buscar Usuario por ID</h2>
               <p className="text-slate-400 text-sm mt-1">Consulta los detalles específicos de un usuario mediante su identificador único.</p>
             </div>
+
             <form onSubmit={handleSearchUser} className="flex gap-3">
               <input 
                 type="number" 
-                min="1"
-                step="1"
                 placeholder="Ingresa el ID del usuario..." 
                 value={searchId}
                 onChange={(e) => setSearchId(e.target.value)}
                 className="flex-1 bg-slate-950 border border-slate-700 text-white text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
-              <button
-                type="submit"
-                disabled={isSearching}
-                className="bg-blue-600 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow transition"
-              >
-                {isSearching ? 'Buscando...' : 'Buscar'}
+              <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow transition">
+                Buscar
               </button>
             </form>
 
             {searchError && (
-              <p role="alert" className="text-sm text-red-400">{searchError}</p>
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-4 rounded-xl text-center">
+                {searchError}
+              </div>
             )}
 
             {searchedUser && (
-              <section aria-live="polite" className="rounded-xl border border-slate-700 bg-slate-950 p-5">
-                <h3 className="mb-3 font-semibold text-white">Información del usuario</h3>
-                <dl className="grid gap-2 text-sm sm:grid-cols-2">
-                  <div><dt className="text-slate-400">ID</dt><dd className="text-white">{searchedUser.id}</dd></div>
-                  <div><dt className="text-slate-400">Email</dt><dd className="text-white">{searchedUser.email}</dd></div>
-                  <div><dt className="text-slate-400">Nombre</dt><dd className="text-white">{searchedUser.full_name || 'No especificado'}</dd></div>
-                  <div><dt className="text-slate-400">Rol</dt><dd className="text-white">{searchedUser.role}</dd></div>
-                  <div><dt className="text-slate-400">Estado</dt><dd className="text-white">{searchedUser.is_active ? 'Activo' : 'Inactivo'}</dd></div>
-                </dl>
-              </section>
+              <div className="bg-slate-950 border border-slate-800 p-6 rounded-xl flex flex-col gap-4 mt-2">
+                <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">¡Usuario encontrado exitosamente!</span>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-slate-400">ID:</span> <span className="text-white font-mono">{searchedUser.id}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Email:</span> <span className="text-white">{searchedUser.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Nombre:</span> <span className="text-white">{searchedUser.full_name || 'No especificado'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Rol:</span> <span className="text-blue-400 font-semibold">{searchedUser.role}</span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -220,11 +260,72 @@ export default function AdminDashboard() {
               <h2 className="text-xl font-bold text-white">Crear Nuevo Usuario</h2>
               <p className="text-slate-400 text-sm mt-1">Añade un nuevo usuario directamente desde el panel.</p>
             </div>
-            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+
+            {createError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm p-3.5 rounded-xl text-center font-medium">
+                {createError}
+              </div>
+            )}
+
+            {createSuccess && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm p-3.5 rounded-xl text-center font-medium">
+                {createSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateUser} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-slate-300">Correo Electrónico</label>
-                <input type="email" placeholder="usuario@ejemplo.com" className="bg-slate-950 border border-slate-700 text-white text-sm p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input 
+                  type="email" 
+                  placeholder="usuario@ejemplo.com" 
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 text-white text-sm p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  required
+                />
               </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-300">Nombre Completo (Opcional)</label>
+                <input 
+                  type="text" 
+                  placeholder="Ej. Juan Pérez" 
+                  value={newFullName}
+                  onChange={(e) => setNewFullName(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 text-white text-sm p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-slate-300">Contraseña</label>
+                  <span className="text-[10px] text-slate-400">Entre 8 y 30 caracteres</span>
+                </div>
+                <input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={8}
+                  maxLength={30}
+                  className="bg-slate-950 border border-slate-700 text-white text-sm p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-300">Rol del Sistema</label>
+                <select 
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 text-white text-sm p-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="user">User (Estándar)</option>
+                  <option value="admin">Admin (Administrador)</option>
+                </select>
+              </div>
+
               <button type="submit" className="mt-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold p-3.5 rounded-xl shadow-lg transition">
                 Guardar y Crear Usuario
               </button>
