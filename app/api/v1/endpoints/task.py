@@ -20,10 +20,24 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    owner_id = current_user.id
+
+    # Admins/staff can create a task on behalf of another user
+    if task_in.owner_id is not None and task_in.owner_id != current_user.id:
+        if current_user.role not in ["admin", "staff"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to assign tasks to other users"
+            )
+
+        user_service = UserService(db)
+        await user_service.get_user_by_id(task_in.owner_id)  # Raises 404 if it does not exist
+        owner_id = task_in.owner_id
+
     new_task = Task(
         title=task_in.title,
         description=task_in.description,
-        owner_id=current_user.id  # <-- Set the owner_id to the current user's ID
+        owner_id=owner_id
     )
     db.add(new_task)
     await db.commit()

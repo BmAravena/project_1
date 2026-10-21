@@ -4,6 +4,7 @@ from typing import Optional
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
+    owner_id: Optional[int] = None  # Only admins/staff can assign tasks to another user
 
 class TaskResponse(BaseModel):
     id: int
