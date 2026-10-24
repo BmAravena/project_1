@@ -109,7 +109,9 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    // "replace" removes the dashboard from history, so the back button
+    // cannot return to the page that was open before logging out.
+    window.location.replace('/login');
   };
 
   const handleDelete = async (id: number) => {

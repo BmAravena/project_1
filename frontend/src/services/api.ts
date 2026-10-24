@@ -13,4 +13,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// If the backend rejects the token (expired, revoked, invalid), clear the
+// local session and send the user back to the login page.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
